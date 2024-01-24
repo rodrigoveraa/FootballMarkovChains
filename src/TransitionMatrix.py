@@ -10,39 +10,6 @@ class TransitionMatrix:
     def __init__(self, matrix: np.ndarray) -> None:
         self.matrix = matrix
 
-    @staticmethod
-    def _generate_new_row(n: int) -> list:
-        """Genera una lista de probabilidades random que suman 1.
-
-        Arguments:
-            n -- la cantidad de probabilidades a generar
-
-        Returns:
-            Una lista, de largo n, de probabilidades aleatorias que suman 1.
-        """        
-        initial_row = []
-        for i in range(n):
-            initial_row.append(random.random())
-        initial_total = sum(initial_row)
-        return [x/initial_total for x in initial_row]
-    
-    @classmethod
-    def create_random_matrix(cls, size: int):
-        """Genera una matriz de transiciones con probabilidades aleatorias.
-
-        Arguments:
-            size -- el tamaño n de la matriz nxn.
-
-        Returns:
-            Una nueva TransitionMatrix con probabilidades aleatorias.
-        """        
-        matrix = np.eye(size)
-        for i in range(size):
-            matrix[i,:] = TransitionMatrix._generate_new_row(size)
-
-        return TransitionMatrix(matrix)
-
-
     def take_actions(self, number_of_actions: int):
         """Calcula las probabilidades de la matriz de transiciones tras un número de acciones o pasos.
 
@@ -62,7 +29,6 @@ class TransitionMatrix:
         # la matriz de transiciones tras n acciones es la n-ésima potencia de la matriz original
         return TransitionMatrix(np.linalg.matrix_power(self.matrix, number_of_actions))
         
-
     def calculate_p_state(self, number_of_actions: int, state: int) -> np.ndarray:
         """Calcula, para todos los estados, la probabilidad de terminar en un estado específico tras un número de acciones.
 
@@ -87,9 +53,6 @@ class TransitionMatrix:
         matrix_after_n_actions = self.take_actions(number_of_actions)
 
         return matrix_after_n_actions.matrix[:, state]
-
-
-
 
     def __str__(self) -> str:
         return self.matrix.__str__()
