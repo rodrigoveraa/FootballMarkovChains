@@ -55,4 +55,5 @@ class TransitionMatrix:
         return matrix_after_n_actions.matrix[:, state]
 
     def __str__(self) -> str:
+        np.set_printoptions(precision=4, suppress=True)
         return self.matrix.__str__()

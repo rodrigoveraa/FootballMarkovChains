@@ -74,16 +74,19 @@ def random_transition_matrix(size: int) -> TransitionMatrix:
 
     return TransitionMatrix(matrix)
 
-def realistic_random_transition_matrix(size: int) -> TransitionMatrix:
+def realistic_random_transition_matrix(size: int, penalty_chance=0.7, stay_chance=0.5) -> TransitionMatrix:
     """Genera una matriz de transiciones con valores aleatorios, cumpliendo ciertas restricciones adicionales.
 
     Las restricciones son:
+    - La suma de los valores de cada fila debe ser 1
     - Transiciones GOAL -> GOAL y END_OF_POSSESSION -> END_OF_POSSESSION son 1
-    - Transición PENALTY -> GOAL es 0.7
-    - En los estados Sn, mantenerse en el mismo estado es un valor aleatorio entre 0.5 y 0.6
+    - Transición PENALTY -> GOAL es alta, default es 0.7
+    - En los estados Sn, mantenerse en el mismo estado es un valor aleatorio relativamente alto, default es alrededor de 0.5
 
     Arguments:
         size -- El tamaño de la matriz.
+        penalty_chance -- La probabilidad de la transición PENALTY -> GOAL
+        stay_chance -- La probabilidad media de que un estado Sn se mantenga en el mismo estado.
 
     Returns:
         Una TransitionMatrix con la estructura descrita.
@@ -94,12 +97,12 @@ def realistic_random_transition_matrix(size: int) -> TransitionMatrix:
     matrix[STATES['GOAL'],:] = generate_random_row_with_fixed_values(size, {STATES['GOAL']:1})
     matrix[STATES['END_OF_POSSESSION'],:] = generate_random_row_with_fixed_values(size, {STATES['END_OF_POSSESSION']:1})
 
-    matrix[STATES['PENALTY'],:] = generate_random_row_with_fixed_values(size, {STATES['GOAL']:0.7})
+    matrix[STATES['PENALTY'],:] = generate_random_row_with_fixed_values(size, {STATES['GOAL']:penalty_chance})
 
     for i in range(STATES['SHORT_CORNER'], STATES['SHORT_CORNER']+6):
         matrix[i,:] = generate_random_row(size)
 
-    for i in range(STATES['S1'], len(STATES)):
-        matrix[i,:] = generate_random_row_with_fixed_values(size, {i:random.uniform(0.5, 0.6)})
+    for i in range(STATES['S01'], len(STATES)):
+        matrix[i,:] = generate_random_row_with_fixed_values(size, {i:random.uniform(stay_chance-0.05, stay_chance+0.05)})
 
     return TransitionMatrix(matrix)
