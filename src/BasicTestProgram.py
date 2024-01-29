@@ -1,7 +1,10 @@
 import argparse
 
+import numpy as np
+
 from States import STATES
 import TransitionMatrixLoader
+import TransitionMatrixFileHandler as tmfh
 
 DEFAULT_MATRIX_SIZE = len(STATES)
 
@@ -14,25 +17,39 @@ parser.add_argument('--state-stay-chance', default=0.5, type=float,
 parser.add_argument('--number-of-actions', default=20, type=int, 
                     help='Número de acciones a tomar (default: %(default)s)')
 parser.add_argument('--final-state', default='GOAL', choices=STATES.keys(), type=str,
-                    help='Estado del que se quieren obtener las probabilidades')
+                    help='Nombre del estado del que se quieren obtener las probabilidades')
 parser.add_argument('--output-style', choices={'list', 'dict'}, default='list', type=str,
                     help='Formato en que se muestran los resultados.')
+parser.add_argument('--input-file', type=str, help="Archivo que contiene una matriz de transiciones")
+
+parser.add_argument('--output-file', type=str, help="Archivo en el que se guardarán los resultados")
 
 args = parser.parse_args()
 
-print('Generando matriz de transiciones...')
-print()
-newTM = TransitionMatrixLoader.realistic_random_transition_matrix(
-    DEFAULT_MATRIX_SIZE,
-    args.penalty_goal_chance,
-    args.state_stay_chance
-)
+print(args)
 
-print('Calculando probabilidades después de {} acciones...'.format(args.number_of_actions))
+print('Obteniendo matriz de transiciones...')
+print()
+
+if args.input_file:
+    newTM = tmfh.load_matrix_from_txt(args.input_file)
+
+else:
+    newTM = TransitionMatrixLoader.realistic_random_transition_matrix(
+        DEFAULT_MATRIX_SIZE,
+        args.penalty_goal_chance,
+        args.state_stay_chance
+    )
+
+print('Calculando probabilidades de terminar en {} después de {} acciones...'.format(args.final_state, args.number_of_actions))
 print()
 final_probs = newTM.calculate_p_state(args.number_of_actions, STATES[args.final_state])
 
 print("Listo!")
+
+if args.output_file:
+    print("Guardando resultados en {}".format(args.output_file))
+    tmfh.save_results_to_txt(final_probs, args.output_file, args.output_style)
 
 print('Probabilidades calculadas:')
 if args.output_style == 'list':
