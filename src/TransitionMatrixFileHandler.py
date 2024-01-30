@@ -2,7 +2,7 @@ import numpy as np
 import os
 import math
 
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 
 from TransitionMatrix import TransitionMatrix
 from States import STATES
@@ -17,6 +17,13 @@ def save_matrix_to_txt(tm: TransitionMatrix, file):
     np.savetxt(file, tm.matrix)
 
 def save_matrix_to_xlsx(tm: TransitionMatrix, file):
+    """Guarda una TransitionMatrix a un archivo xlsx.
+
+    Arguments:
+        tm -- La TransitionMatrix a guardar
+        file -- El path del archivo en el que se guarda la TransitionMatrix
+    """    
+
     workbook = Workbook()
     sheet = workbook.active
 
@@ -41,6 +48,31 @@ def load_matrix_from_txt(file) -> TransitionMatrix:
     check_if_matrix_is_valid(matrix)
 
     return TransitionMatrix(matrix)
+
+def load_matrix_from_xlsx(file) -> TransitionMatrix:
+    """Carga una TransitionMatrix desde un archivo xlsx y la valida.
+
+    Arguments:
+        file -- El path del archivo xlsx que contiene la TransitionMatrix
+
+    Returns:
+        La TransitionMatrix leída del archivo xlsx, validada.
+    """    
+
+    workbook = load_workbook(filename=file)
+    sheet = workbook.active
+    rows = []
+
+    for r in sheet.values:
+        rows.append(r)
+
+    matrix = np.array(rows)
+
+    check_if_matrix_is_valid(matrix)
+
+    return TransitionMatrix(matrix)
+
+
 
 def check_if_matrix_is_valid(matrix: np.ndarray):
     """Revisa si una matriz cumple con las condiciones para ser una TransitionMatrix válida.
