@@ -97,7 +97,7 @@ def check_if_matrix_is_valid(matrix: np.ndarray):
         if not math.isclose(row_total, 1):
             raise Exception("La fila {} suma {} en lugar de 1.".format(i, row_total))
     
-def save_results_to_txt(col: np.ndarray, file, format):
+def save_results_to_file(col: np.ndarray, file, format='list'):
     """Guarda un np.ndrray, que contiene resultados de procesar una TransitionMatrix, en un archivo de texto.
 
     Arguments:
@@ -109,16 +109,29 @@ def save_results_to_txt(col: np.ndarray, file, format):
         Exception: El formato especificado debe ser uno de los formatos válidos.
     """    
 
-    if format not in ('list, dict'):
-        raise Exception("'{}' no es un formato válido.")
-    
-    if format == 'list':
-        np.savetxt(file, col)
+    filename, fileext = os.path.splitext(file)
+    if fileext == '.xlsx':
+        array_to_xlsx(col, file)
 
-    elif format == 'dict':
-        probs_dict = dict(zip(STATES.keys(), col))
-        with open(file, 'w') as f:
-            print('{', file=f)
-            for item in probs_dict.items():
-                print(item, file=f)
-            print('}', file=f)
+    else:
+        if format not in ('list, dict'):
+            raise Exception("'{}' no es un formato válido.")
+    
+        if format == 'list':
+            np.savetxt(file, col)
+
+        elif format == 'dict':
+            probs_dict = dict(zip(STATES.keys(), col))
+            with open(file, 'w') as f:
+                print('{', file=f)
+                for item in probs_dict.items():
+                    print(item, file=f)
+                print('}', file=f)
+
+def array_to_xlsx(arr: np.ndarray, file):
+    workbook = Workbook()
+    sheet = workbook.active
+
+    arr_list = arr.tolist()
+    sheet.append(arr_list)
+    workbook.save(file)

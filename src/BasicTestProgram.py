@@ -1,4 +1,5 @@
 import argparse
+import os
 
 import numpy as np
 
@@ -32,7 +33,11 @@ print('Obteniendo matriz de transiciones...')
 print()
 
 if args.input_file:
-    newTM = tmfh.load_matrix_from_txt(args.input_file)
+    filename, fileext = os.path.splitext(args.input_file)
+    if fileext == '.xlsx':
+        newTM = tmfh.load_matrix_from_xlsx(args.input_file)
+    else:    
+        newTM = tmfh.load_matrix_from_txt(args.input_file)
 
 else:
     newTM = TransitionMatrixLoader.realistic_random_transition_matrix(
@@ -49,7 +54,7 @@ print("Listo!")
 
 if args.output_file:
     print("Guardando resultados en {}".format(args.output_file))
-    tmfh.save_results_to_txt(final_probs, args.output_file, args.output_style)
+    tmfh.save_results_to_file(final_probs, args.output_file, args.output_style)
 
 print('Probabilidades calculadas:')
 if args.output_style == 'list':
