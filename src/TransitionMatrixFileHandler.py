@@ -5,7 +5,7 @@ import math
 from openpyxl import Workbook, load_workbook
 
 from TransitionMatrix import TransitionMatrix
-from States import STATES
+from Defs import STATES
 
 def save_matrix_to_txt(tm: TransitionMatrix, file):
     """Guarda una TransitionMatrix a un archivo de texto.

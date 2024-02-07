@@ -3,7 +3,7 @@ import os
 
 import numpy as np
 
-from States import STATES
+from Defs import STATES
 import TransitionMatrixLoader
 import TransitionMatrixFileHandler as tmfh
 
