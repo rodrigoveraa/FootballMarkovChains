@@ -10,7 +10,7 @@ class Event:
         self.foul_advantage = event.get('foul_won', {}).get('advantage')
         self.foul_penalty = event.get('foul_won', {}).get('penalty')
         self.location = event.get('location')
-        self.under_pressure = event.get('under_pressure')
+        self.under_pressure = event.get('under_pressure', False)
         self.index = event.get('index')
         self.timestamp = event.get('timestamp')
         self.outcome = event.get('shot', {}).get('outcome', {}).get('name')
@@ -19,11 +19,16 @@ class Event:
         self.shot_type = event.get('shot', {}).get('type', {}).get('name')
         self.pass_type = event.get('pass', {}).get('type', {}).get('name')
 
-    def get_zone(self, forward=True) -> ZONES:
+    def get_zone(self) -> ZONES:
+        """
+        Entrega la zona en la cancha en la cual se produce el evento.
+        """
+
         if not self.location:
             return ZONES.NONE
 
-        # por ahora asumimos ataque de izquierda a derecha, o de 0 a 120
+        # las coordenadas son siempre de (0, 0) a (120, 80) con respecto al equipo que actúa
+        # por ejemplo, los corner son siempre alrededor de (120, 0) o (120, 80)
         if self.location[1] < 18:
             if self.location[0] < 40:
                 return ZONES.DEF_LW
