@@ -55,7 +55,7 @@ class Event:
             
     def __str__(self) -> str:
         
-        event_str = "({}) {}P {} {}{}\n{} {}\n{}{}{}{}{}{}".format(
+        event_str = "({}) {}T {} {}{}\n{} {}\n{}{}{}{}{}{}".format(
             self.index,
             self.period,
             self.timestamp,
