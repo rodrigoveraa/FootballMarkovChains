@@ -1,7 +1,7 @@
 import numpy as np
 import random
 
-from States import STATES
+from Defs import NewStates
 
 class TransitionMatrix:
     """Representa y permite operar sobre una matriz de transiciones.
@@ -29,7 +29,7 @@ class TransitionMatrix:
         # la matriz de transiciones tras n acciones es la n-ésima potencia de la matriz original
         return TransitionMatrix(np.linalg.matrix_power(self.matrix, number_of_actions))
         
-    def calculate_p_state(self, number_of_actions: int, state: int) -> np.ndarray:
+    def calculate_p_state(self, number_of_actions: int, state: NewStates) -> np.ndarray:
         """Calcula, para todos los estados, la probabilidad de terminar en un estado específico tras un número de acciones.
 
         Arguments:
@@ -47,12 +47,12 @@ class TransitionMatrix:
         if number_of_actions <= 0:
             raise ValueError("No se pueden calcular las probabilidades con menos de 1 acción.")
         
-        if state not in STATES.values():
+        if state not in list(NewStates):
             raise ValueError("Estado no válido.")
         
         matrix_after_n_actions = self.take_actions(number_of_actions)
 
-        return matrix_after_n_actions.matrix[:, state]
+        return matrix_after_n_actions.matrix[:, list(NewStates).index(state)]
 
     def __str__(self) -> str:
         np.set_printoptions(precision=4, suppress=True)
