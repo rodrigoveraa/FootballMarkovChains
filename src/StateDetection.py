@@ -9,7 +9,7 @@ Todas las funciones entregan un estado y el nombre del equipo que se encuentra e
 
 """
 
-def check_goal(e1: Event, e2: Event) -> (NewStates, str):
+def check_goal(e1: Event, e2: Event):
     """
     Revisa si un evento conduce al estado GOAL.
     Puede ocurrir de dos formas:
@@ -22,7 +22,7 @@ def check_goal(e1: Event, e2: Event) -> (NewStates, str):
         return (NewStates.GOAL, e2.team)
     return (None, None)
 
-def check_eop(e1: Event, e2: Event) -> (NewStates, str):
+def check_eop(e1: Event, e2: Event):
     """
     Revisa si se llegó al estado END_OF_POSSESSION.
 
@@ -33,7 +33,7 @@ def check_eop(e1: Event, e2: Event) -> (NewStates, str):
         return (NewStates.END_OF_POSSESSION, e1.possession_team) 
     return (None, None)
 
-def check_penalty(e1: Event, e2: Event) -> (NewStates, str):
+def check_penalty(e1: Event, e2: Event):
     """
     Revisa si se llegó al estado PENALTY.
 
@@ -43,7 +43,7 @@ def check_penalty(e1: Event, e2: Event) -> (NewStates, str):
         return (NewStates.PENALTY, e2.team)
     return (None, None)
 
-def check_free_kick(e1: Event, e2: Event) -> (NewStates, str):
+def check_free_kick(e1: Event, e2: Event):
     """
     Revisa si se llegó al estado FREE_KICK.
 
@@ -55,7 +55,7 @@ def check_free_kick(e1: Event, e2: Event) -> (NewStates, str):
         return (NewStates.FREE_KICK, e2.team)
     return (None, None)
 
-def check_corner(e1: Event, e2: Event) -> (NewStates, str):
+def check_corner(e1: Event, e2: Event):
     """
     Revisa si se llegó al estado CORNER.
 
@@ -67,7 +67,7 @@ def check_corner(e1: Event, e2: Event) -> (NewStates, str):
         return (NewStates.CORNER, e2.team)
     return (None, None)
 
-def check_throw_in(e1: Event, e2: Event) -> (NewStates, str):
+def check_throw_in(e1: Event, e2: Event):
     """
     Revisa si se llegó al estado THROW_IN.
 
@@ -77,7 +77,7 @@ def check_throw_in(e1: Event, e2: Event) -> (NewStates, str):
         return (NewStates.THROW_IN, e2.team)
     return (None, None)
 
-def check_zonal_state(e1: Event, e2: Event) -> (NewStates, str):
+def check_zonal_state(e1: Event, e2: Event):
     """
     Revisa si se está en uno de los estados zonales. Los estados zonales son estados que dependen
     de la ubicación zonal en la cancha (en cuál zona se tiene la pelota) y de la presencia o
@@ -88,7 +88,11 @@ def check_zonal_state(e1: Event, e2: Event) -> (NewStates, str):
 
     if e2.team == e2.possession_team:
         zone = e2.get_zone()
-        state = ZONAL_STATES.get((zone, e2.under_pressure))
+        pressure = e2.get_pressure()
+        play = e2.get_play_type()
+        state = ZONAL_STATES.get((zone, pressure, play))
         return(state, e2.team)
     
     return (None, None)
+
+DETECTION_FUNCTIONS = [check_zonal_state, check_penalty, check_free_kick, check_corner, check_throw_in, check_goal, check_eop]
