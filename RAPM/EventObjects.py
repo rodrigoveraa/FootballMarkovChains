@@ -135,19 +135,25 @@ class Segment:
         return Segment(self.team1, new_players1, self.team2, new_players2, matchtime, DefaultMatchTime())
     
     
-    def print(self):
-        print("{}:".format(self.team1))
+    def print(self, f):
+        print("{}:".format(self.team1), file=f)
         for p in self.players1:
-            print("\t{}".format(p))
-        print()
-        print("{}:".format(self.team2))
+            print("\t{}".format(p), file=f)
+        print(file=f)
+        print("{}:".format(self.team2), file=f)
         for p in self.players2:
-            print("\t{}".format(p))
-        print("Start: {}".format(self.start))
-        print("End: {}".format(self.end))
+            print("\t{}".format(p), file=f)
+        print("Start: {}".format(self.start), file=f)
+        print("End: {}".format(self.end), file=f)
         for sub in self.subs:
-            print(sub)
+            print(sub, file=f)
         for so in self.sendoffs:
-            print(so)
+            print(so, file=f)
+
+    def contains_player_home(self, player:Player):
+        return player in self.players1
+    
+    def contains_player_away(self, player:Player):
+        return player in self.players2
 
             
