@@ -1,4 +1,4 @@
-from datetime import time
+from datetime import timedelta, time
 from typing import Any
 
 class Player:
@@ -35,7 +35,9 @@ class MatchTime:
 
     def __init__(self, period:int, timestamp:str) -> None:
         self.period = period
-        self.timestamp = time.fromisoformat(timestamp).replace(microsecond=0)
+        t_aux = time.fromisoformat(timestamp).replace(microsecond=0)
+        # self.timestamp = time.fromisoformat(timestamp).replace(microsecond=0)
+        self.timestamp = timedelta(minutes=t_aux.minute, seconds=t_aux.second)
 
     def __str__(self) -> str:
         return "{}T {}".format(self.period, self.timestamp)
@@ -46,6 +48,16 @@ class MatchTime:
             aaa2 = self.timestamp == other.timestamp
             return aaa1 and aaa2
         return False
+    
+    def absolute_time(self):
+        if self.period == 1:
+            return self.timestamp
+        elif self.period == 2:
+            return self.timestamp + timedelta(minutes=45)
+        elif self.period == 3:
+            return self.timestamp + timedelta(minutes=90)
+        elif self.period == 4:
+            return self.timestamp + timedelta(minutes=105)
     
 class DefaultMatchTime(MatchTime):
 
@@ -71,6 +83,15 @@ class SendOff:
 
     def __str__(self) -> str:
         return "SENDOFF: {} ({}) is sent off".format(self.player, self.team)
+    
+class Goal:
+
+    def __init__(self, team:Team, time:MatchTime) -> None:
+        self.team = team
+        self.time = time
+
+    def __str__(self) -> str:
+        return "GOAL: {} {}".format(self.time, self.team)
         
     
 
@@ -85,6 +106,8 @@ class Segment:
         self.end = end
         self.subs = []
         self.sendoffs = []
+        self.home_goals = []
+        self.away_goals = []
 
     def close(self, end:MatchTime):
         self.end = end
@@ -116,21 +139,11 @@ class Segment:
         new_players1 = self.players1.copy()
         new_players2 = self.players2.copy()
 
-        print(len(self.sendoffs))
-        print("AAAAAAAAAAA")
-
         for so in self.sendoffs:
             if so.team == self.team1:
-                if so.player in new_players1:
-                    print("{} in {}".format(so.player, self.team1))
                 new_players1.remove(so.player)
             if so.team == self.team2:
-                if so.player in new_players2:
-                    print("{} in {}".format(so.player, self.team2))
                 new_players2.remove(so.player)
-
-        print(len(new_players1))
-        print(len(new_players2))
 
         return Segment(self.team1, new_players1, self.team2, new_players2, matchtime, DefaultMatchTime())
     
@@ -145,6 +158,15 @@ class Segment:
             print("\t{}".format(p), file=f)
         print("Start: {}".format(self.start), file=f)
         print("End: {}".format(self.end), file=f)
+        
+        print("HOME GOALS:", file=f)
+        for hg in self.home_goals:
+            print("\t{}".format(hg), file=f)
+        print("AWAY GOALS:", file=f)
+        for ag in self.away_goals:
+            print("\t{}".format(ag), file=f)
+        print("DIFF: {}".format(self.goal_difference()), file=f)
+
         for sub in self.subs:
             print(sub, file=f)
         for so in self.sendoffs:
@@ -155,5 +177,17 @@ class Segment:
     
     def contains_player_away(self, player:Player):
         return player in self.players2
+    
+    def add_goal(self, goal:Goal):
+        if goal.team == self.team1:
+            self.home_goals.append(goal)
+        elif goal.team == self.team2:
+            self.away_goals.append(goal)
+
+    def goal_difference(self):
+        return len(self.home_goals) - len(self.away_goals)
+    
+    def contains(self, goal:Goal):
+        return goal.time.absolute_time() >= self.start.absolute_time() and goal.time.absolute_time() < self.end.absolute_time()
 
             
