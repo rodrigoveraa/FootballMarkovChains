@@ -6,6 +6,14 @@ import ProbabilitiesGeneration as PGen
 
 
 def find_segments(events_files):
+    """Busca los distintos segmentos que ocurren en una lista de archivos de eventos.
+
+    Arguments:
+        events_files -- la lista de archivos de eventos
+
+    Returns:
+        Una lista con los segmentos encontrados.
+    """    
 
     segments = []
 
@@ -99,6 +107,16 @@ def find_segments(events_files):
 
 
 def calculate_ridge_regression(X:np.ndarray, y, l):
+    """Calcula la ridge regression como se explica en Kharrat, McHale y López Peña (página 5).
+
+    Arguments:
+        X -- la matriz de presencias
+        y -- el vector target
+        l -- el "penalty term" (lambda)
+
+    Returns:
+        Un vector correspondiente a la solución de la ridge regression (alpha)
+    """    
 
     xtx = X.transpose() @ X
     l2i = (l*l)*np.identity(X.shape[1])
@@ -110,9 +128,25 @@ def calculate_ridge_regression(X:np.ndarray, y, l):
 
 
 def rapm_y(segments):
+    """Calcula el valor del target para una lista de segmentos (RAPM)
+
+    Arguments:
+        segments -- la lista de segmentos
+
+    Returns:
+        Un vector con los valores del target
+    """    
     return np.array([s.goal_difference() for s in segments])
 
 def eppm_y(segments):
+    """Calcula el valor del target para una lista de segmentos (EPPM)
+
+    Arguments:
+        segments -- la lista de segmentos
+
+    Returns:
+        Un vector con los valores del target
+    """  
     probs = PGen.generate_all_probs(PGen.MATCH_LENGTH, PGen.DEFAULT_VARIATION)
     result = []
     for i, s in enumerate(segments):
