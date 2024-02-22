@@ -49,8 +49,12 @@ def generate_all_probs(length, variation):
         for i in range(1, length):
             a = vary_probs(a, variation)
             all_probs.append(a)
+        
+        
 
         if all_probs[-1][PROBS['HW']] > all_probs[-1][PROBS['AW']] and all_probs[-1][PROBS['AW']] > all_probs[-1][PROBS['D']]:
+            for i in range(50):
+                all_probs.append(a)
             return all_probs
 
 

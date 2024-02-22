@@ -2,7 +2,7 @@ import numpy as np
 import random
 
 from TransitionMatrix import TransitionMatrix
-from States import STATES
+from Defs import STATES
 
 def generate_random_row(size: int) -> list:
     """Genera una lista de probabilidades random que suman 1.

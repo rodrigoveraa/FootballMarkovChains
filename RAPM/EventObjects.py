@@ -49,7 +49,7 @@ class MatchTime:
             return aaa1 and aaa2
         return False
     
-    def absolute_time(self):
+    def absolute_time(self) -> timedelta:
         if self.period == 1:
             return self.timestamp
         elif self.period == 2:
@@ -58,6 +58,9 @@ class MatchTime:
             return self.timestamp + timedelta(minutes=90)
         elif self.period == 4:
             return self.timestamp + timedelta(minutes=105)
+        
+    def minute(self):
+        return int(self.absolute_time().seconds/60)
     
 class DefaultMatchTime(MatchTime):
 
@@ -189,5 +192,11 @@ class Segment:
     
     def contains(self, goal:Goal):
         return goal.time.absolute_time() >= self.start.absolute_time() and goal.time.absolute_time() < self.end.absolute_time()
+    
+    def start_minute(self):
+        return self.start.minute()
+    
+    def end_minute(self):
+        return self.end.minute()
 
             
