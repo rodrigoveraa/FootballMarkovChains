@@ -2,6 +2,8 @@ from datetime import timedelta, time
 from typing import Any
 
 class Player:
+    """Representa un jugador mencionado en la lista de eventos.
+    """    
 
     def __init__(self, id:int, name:str) -> None:
         self.id = id
@@ -17,6 +19,8 @@ class Player:
 
     
 class Team:
+    """Representa un equipo en la lista de eventos.
+    """    
 
     def __init__(self, id:int, name:str) -> None:
         self.id = id
@@ -32,11 +36,14 @@ class Team:
     
 
 class MatchTime:
+    """Se una para representar instantes de tiempo en los segmentos.
+    Internamente utiliza el período del partido y el tiempo transcurrido dentro
+    de ese período.
+    """    
 
     def __init__(self, period:int, timestamp:str) -> None:
         self.period = period
         t_aux = time.fromisoformat(timestamp).replace(microsecond=0)
-        # self.timestamp = time.fromisoformat(timestamp).replace(microsecond=0)
         self.timestamp = timedelta(minutes=t_aux.minute, seconds=t_aux.second)
 
     def __str__(self) -> str:
@@ -48,8 +55,14 @@ class MatchTime:
             aaa2 = self.timestamp == other.timestamp
             return aaa1 and aaa2
         return False
-    
+      
     def absolute_time(self) -> timedelta:
+        """Entrega el tiempo absoluto representado por este MatchTime. En otras palabras,
+        "minuto 65" en lugar de "período 2, minuto 20".
+
+        Returns:
+            Un timedelta equivalente, pero contado desde el minuto 0, sin considerar períodos.
+        """        
         if self.period == 1:
             return self.timestamp
         elif self.period == 2:
@@ -60,6 +73,11 @@ class MatchTime:
             return self.timestamp + timedelta(minutes=105)
         
     def minute(self):
+        """Entrega el minuto de juego correspondiente al MatchTime.
+
+        Returns:
+            _description_
+        """        
         return int(self.absolute_time().seconds/60)
     
 class DefaultMatchTime(MatchTime):
@@ -69,6 +87,8 @@ class DefaultMatchTime(MatchTime):
 
 
 class Substitution:
+    """Representa una sustitución durante un partido.
+    """    
 
     def __init__(self, team:Team, player_in:Player, player_out:Player) -> None:
         self.team = team
@@ -79,6 +99,8 @@ class Substitution:
         return "SUBSTITUTION: {} REPLACES {} ({})".format(self.player_in, self.player_out, self.team)
     
 class SendOff:
+    """Representa una expulsión durante un partido.
+    """    
 
     def __init__(self, team:Team, player:Player) -> None:
         self.team = team
@@ -88,6 +110,8 @@ class SendOff:
         return "SENDOFF: {} ({}) is sent off".format(self.player, self.team)
     
 class Goal:
+    """Representa un gol durante un partido.
+    """    
 
     def __init__(self, team:Team, time:MatchTime) -> None:
         self.team = team
@@ -99,6 +123,8 @@ class Goal:
     
 
 class Segment:
+    """Representa un segmento de un partido según la definición de Kharrat, McHale y López Peña.
+    """    
 
     def __init__(self, team1:Team, players1:list, team2:Team, players2:list, start:MatchTime, end:MatchTime) -> None:
         self.team1 = team1
@@ -113,15 +139,36 @@ class Segment:
         self.away_goals = []
 
     def close(self, end:MatchTime):
+        """Asigna un tiempo final al segmento.
+
+        Arguments:
+            end -- El tiempo final del segmento.
+        """        
         self.end = end
 
     def add_sub(self, sub:Substitution):
+        """Agrega una sustitución al segmento. Estas sustituciones se considera que
+        finalizan el segmento, no lo inician.
+
+        Arguments:
+            sub -- la sustitución a agregar
+        """        
         self.subs.append(sub)
 
     def add_sendoff(self, so:SendOff):
         self.sendoffs.append(so)
 
     def apply_subs(self, matchtime:MatchTime):
+        """Hace efectivas las sustituciones del segmento. En otras palabras,
+        genera un nuevo segmento tal que las sustituciones fueron aplicadas.
+
+        Arguments:
+            matchtime -- el momento en que ocurren las sustituciones
+
+        Returns:
+            Un nuevo segmento con los mismos equipos, los jugadores modificados,
+            con tiempo de inicio igual al tiempo en que se realizan las sustituciones.
+        """        
         new_players1 = self.players1.copy()
         new_players2 = self.players2.copy()
 
@@ -152,6 +199,12 @@ class Segment:
     
     
     def print(self, f):
+        """Imprime información del segmento a un archivo.
+
+        Arguments:
+            f -- el archivo en el que se guardará la información del segmento.
+        """
+
         print("{}:".format(self.team1), file=f)
         for p in self.players1:
             print("\t{}".format(p), file=f)
@@ -176,27 +229,67 @@ class Segment:
             print(so, file=f)
 
     def contains_player_home(self, player:Player):
+        """Determina si un jugador jugó por el equipo local durante este segmento.
+
+        Arguments:
+            player -- el jugador por el que se está consultando
+
+        Returns:
+            True si el jugador jugó por el equipo local durante el segmento, False si no
+        """        
         return player in self.players1
     
     def contains_player_away(self, player:Player):
+        """Determina si un jugador jugó por el equipo visitante durante este segmento.
+
+        Arguments:
+            player -- el jugador por el que se está consultando
+
+        Returns:
+            True si el jugador jugó por el equipo visitante durante el segmento, False si no
+        """ 
         return player in self.players2
     
     def add_goal(self, goal:Goal):
+        """Agrega un gol a la lista de goles que ocurrieron durante este segmento.
+
+        Arguments:
+            goal -- El gol que se desea agregar.
+        """        
         if goal.team == self.team1:
             self.home_goals.append(goal)
         elif goal.team == self.team2:
             self.away_goals.append(goal)
 
     def goal_difference(self):
+        """Calcula la diferencia enrte los goles anotados por el equipo local y
+        los goles anotados por el equipo visitante durante este segmento.
+
+        Returns:
+            La diferencia de goles calculada.
+        """        
         return len(self.home_goals) - len(self.away_goals)
     
     def contains(self, goal:Goal):
+        """Determina si un gol ocurrió durante este segmento. Es decir, si el gol ocurrió
+        entre los tiempos de inicio y fin de este segmento.
+
+        Arguments:
+            goal -- El gol a consultar
+
+        Returns:
+            True si el gol ocurrió durante este segmento, False si no
+        """        
         return goal.time.absolute_time() >= self.start.absolute_time() and goal.time.absolute_time() < self.end.absolute_time()
     
     def start_minute(self):
+        """Entrega el minuto en que se inició este segmento.
+        """        
         return self.start.minute()
     
     def end_minute(self):
+        """Entrega el minuto en que terminó este segmento.
+        """        
         return self.end.minute()
 
             
