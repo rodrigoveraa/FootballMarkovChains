@@ -30,14 +30,14 @@ parser.add_argument('--rating', type=str, choices=RATING_CALC_TARGETS.keys(), de
 args = parser.parse_args()
 
 
-# archivo obtenido usando MatchFinder.py
-# ids_file = "./2-27.txt"
+
 if not args.input_file:
     raise Exception("Falta la lista de archivos de eventos.")
 ids_file = args.input_file
 segments_file = args.segments_file if args.segments_file else ""
 matrix_file = args.matrix_file if args.matrix_file else ""
 
+# obtenemos la lista de archivos de eventos
 with open(ids_file, 'r', encoding='utf-8') as f:
     events_files = f.readlines()
 
@@ -46,7 +46,7 @@ print("Leyendo partidos...")
 # aquí vamos a guardar TODOS los segmentos de TODOS los archivos
 segments = PlusMinusCalculations.find_segments(events_files)
 
-
+# guardamos la lista de segmentos detectados si corresponde
 if segments_file:
     with open(segments_file, 'w', encoding='utf-8') as sf:
         for s in segments:
@@ -55,6 +55,7 @@ if segments_file:
 
 matrix_players = []
 
+# armamos una lista con todos los jugadores involucrados en algún segmento
 print('Armando lista de jugadores...')
 for s in tqdm(segments):
     for p in s.players1 + s.players2:
@@ -62,6 +63,8 @@ for s in tqdm(segments):
             matrix_players.append(p)
 
 matrix = np.zeros((len(segments), len(matrix_players)))
+
+# generamos la matriz de presencias
 print("Generando matriz...")
 for i in tqdm(range(len(segments))):
     for j in range(len(matrix_players)):
@@ -71,6 +74,7 @@ for i in tqdm(range(len(segments))):
         elif segments[i].contains_player_away(matrix_players[j]):
             matrix[i,j] = -1
 
+# guardamos la matriz de presencias si corresponde
 print("Guardando matriz...")
 if matrix_file:
     np.savetxt(matrix_file, matrix)
@@ -80,21 +84,23 @@ if matrix_file:
 # A partir de acá calculamos la solución de la regresión
 
 print("Calculando ratings...")
+# obtenemos la función apropiada para calcular el target
 rating_function = RATING_CALC_TARGETS[args.rating]
 X = matrix
-# y = np.array([s.goal_difference() for s in segments])
+# calculamos el target a partir de la lista de segmentos
 y = rating_function(segments)
 l = args.penalty_term
 
 result = PlusMinusCalculations.calculate_ridge_regression(X, y, l)
 
-
+# guardamos los ratings obtenidos en una lista y la ordenamos de mayor a menor
 ratings = []
 for i in range(len(result)):
     ratings.append((matrix_players[i], result[i]))
 
 ratings.sort(key=lambda x: x[1], reverse=True)
 
+# guardamos la lista de ratings obtenidos
 with open(args.output_file, 'w', encoding='utf-8') as rfile:
     for i in range(len(result)):
         print("{}: {}".format(ratings[i][0], ratings[i][1]), file=rfile)
