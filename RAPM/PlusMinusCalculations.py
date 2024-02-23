@@ -127,7 +127,7 @@ def calculate_ridge_regression(X:np.ndarray, y, l):
     return inv_1 @ xty
 
 
-def rapm_y(segments):
+def rapm_y(segments, **kwargs):
     """Calcula el valor del target para una lista de segmentos (RAPM)
 
     Arguments:
@@ -138,7 +138,7 @@ def rapm_y(segments):
     """    
     return np.array([s.goal_difference() for s in segments])
 
-def eppm_y(segments):
+def eppm_y(segments, **kwargs):
     """Calcula el valor del target para una lista de segmentos (EPPM)
 
     Arguments:
@@ -147,14 +147,17 @@ def eppm_y(segments):
     Returns:
         Un vector con los valores del target
     """  
-    probs = PGen.generate_all_probs(PGen.MATCH_LENGTH, PGen.DEFAULT_VARIATION)
+    if kwargs.get('use_generated_probs', False):
+        probs = PGen.generate_all_probs(PGen.MATCH_LENGTH, PGen.DEFAULT_VARIATION)
+    else:
+        probs = PGen.load_probs_from_file(kwargs['probs_file'])
     result = []
     for i, s in enumerate(segments):
         start = s.start_minute()
         end = s.end_minute()
-        print(i)
-        print(probs[start])
-        print(probs[end])
+        # print(i)
+        # print(probs[start])
+        # print(probs[end])
         value = ((3*probs[end][PGen.PROBS['HW']] + probs[end][PGen.PROBS['D']] - 3*probs[start][PGen.PROBS['HW']] + probs[start][PGen.PROBS['D']]) -
                  (3*probs[end][PGen.PROBS['AW']] + probs[end][PGen.PROBS['D']] - 3*probs[start][PGen.PROBS['AW']] + probs[start][PGen.PROBS['D']]))
         result.append(value)

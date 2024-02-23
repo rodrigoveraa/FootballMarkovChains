@@ -1,5 +1,6 @@
 import random
 import csv
+import math
 
 # Este script genera un set de probabilidades para cada minuto del partido,'
 # de la forma [P_HW, P_D, P_AW], donde
@@ -67,5 +68,20 @@ def generate_all_probs_to_file(length, variation, file):
     with open(file, 'w', newline='') as csvfile:
         probswriter = csv.writer(csvfile, delimiter=' ', quoting=csv.QUOTE_NONE)
         probswriter.writerows(probs)
+
+def load_probs_from_file(file):
+
+    probs = []
+
+    with open(file, 'r', newline='') as csvfile:
+
+        probsreader = csv.reader(csvfile, delimiter=' ', quoting=csv.QUOTE_NONNUMERIC)
+        for row in probsreader:
+            probs.append(row)
+    for i, p in enumerate(probs):
+        if not math.isclose(sum(p), 1):
+            raise Exception("{} no es un archivo de probabilidades válido: fila {} no suma 1".format(file, i+1))
+    return probs
+        
 
 

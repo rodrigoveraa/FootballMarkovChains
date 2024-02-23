@@ -27,6 +27,12 @@ parser.add_argument('--segments-file', type=str, help='Archivo donde se guardar�
 
 parser.add_argument('--rating', type=str, choices=RATING_CALC_TARGETS.keys(), default='RAPM', help="Tipo de rating a calcular")
 
+parser.add_argument('--use-generated-probs', action="store_true", 
+                    help="Sólo para EPPM. Incluir si se desea utilizar probabilidades generadas al momento de correr el script.")
+
+parser.add_argument('--probs-file', type=str, default='./EPPM_probs.csv', 
+                    help="Sólo para EPPM. El nombre del archivo que contiene las probabilidades necesarias para calcular el target de EPPM. Se ignorará si --use-generated-probs está presente.")
+
 args = parser.parse_args()
 
 
@@ -36,6 +42,13 @@ if not args.input_file:
 ids_file = args.input_file
 segments_file = args.segments_file if args.segments_file else ""
 matrix_file = args.matrix_file if args.matrix_file else ""
+
+print("calculando {}...".format(args.rating))
+if args.rating == 'EPPM':
+    if args.use_generated_probs:
+        print("Usando nuevas probabilidades generadas...")
+    else:
+        print("Usando probabilidades obtenidas de {}".format(args.probs_file))
 
 # obtenemos la lista de archivos de eventos
 with open(ids_file, 'r', encoding='utf-8') as f:
@@ -88,7 +101,7 @@ print("Calculando ratings...")
 rating_function = RATING_CALC_TARGETS[args.rating]
 X = matrix
 # calculamos el target a partir de la lista de segmentos
-y = rating_function(segments)
+y = rating_function(segments, use_generated_probs=args.use_generated_probs, probs_file=args.probs_file)
 l = args.penalty_term
 
 result = PlusMinusCalculations.calculate_ridge_regression(X, y, l)
